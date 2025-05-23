@@ -1,0 +1,98 @@
+# 加载所需的 R 包
+library(survival)
+library(survminer)
+library(dplyr)
+
+# 读取生存数据
+survival_data <- read.csv("D:/R/gastric_survival/gastric_cancer_survial.csv", sep = ",", stringsAsFactors = FALSE)
+
+# 读取 HLA 结合力数据
+hla_data <- read.csv("D:/R/gastric_survival/rank_best_counts.csv", sep = ",", stringsAsFactors = FALSE)
+
+# 先检查列名，找到 R 自动转换后的列名
+print(colnames(hla_data))  
+
+# 可能列名被转换成 `Count.10..Rank`，手动修改为 `hla_binding_count`
+colnames(hla_data)[colnames(hla_data) == "Count.10..Rank"] <- "hla_binding_count"
+
+# 提取 HLA 数据中仅保留 Filename 和 结合力计数列
+hla_data <- hla_data[, c("Filename", "hla_binding_count")]
+
+# 提取样本 ID，与生存数据匹配
+hla_data$eid <- gsub("_prediction.txt", "", hla_data$Filename)
+
+# 只保留 `eid` 和 `hla_binding_count` 这两列
+hla_data <- hla_data[, c("eid", "hla_binding_count")]
+
+# 合并生存数据和 HLA 结合数据
+merged_data <- merge(survival_data, hla_data, by = "eid", all.x = TRUE)
+
+# 计算 HLA 结合力的75%分位数
+quantile_75 <- quantile(merged_data$hla_binding_count, 0.75, na.rm = TRUE)
+
+# 创建 HLA 结合力分组变量（小于75%分位数 = 0, 大于等于75%分位数 = 1）
+merged_data$HLA_group <- ifelse(merged_data$hla_binding_count < quantile_75, 0, 1)
+
+# 确保数据格式正确
+merged_data$status <- as.numeric(merged_data$status)  # 生存状态 (1 = 死亡)
+merged_data$sex <- as.factor(merged_data$sex)         # 性别设为因子变量
+
+# 构建生存对象 (Surv)
+surv_object <- Surv(time = merged_data$survival_days, event = merged_data$status)
+
+# 进行 Cox 回归，矫正年龄和性别
+cox_model <- coxph(surv_object ~ HLA_group + sex + age, data = merged_data)
+
+# 输出 Cox 回归结果
+cox_summary <- summary(cox_model)
+print(cox_summary)
+
+# 指定输出目录
+output_dir <- "D:/R/gastric_survival/result/IMM"
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+
+# 保存 Cox 回归结果到 CSV
+cox_result <- data.frame(
+  Variable = rownames(cox_summary$coefficients),
+  HR = cox_summary$coefficients[, "exp(coef)"],  # 风险比 (Hazard Ratio)
+  Lower_95_CI = cox_summary$conf.int[, "lower .95"],  # 95% 置信区间下限
+  Upper_95_CI = cox_summary$conf.int[, "upper .95"],  # 95% 置信区间上限
+  P_Value = cox_summary$coefficients[, "Pr(>|z|)"]  # P 值
+)
+
+write.csv(cox_result, file = file.path(output_dir, "cox_regression_results.csv"), row.names = FALSE)
+
+# 进行 Kaplan-Meier 生存分析
+km_fit <- survfit(surv_object ~ HLA_group, data = merged_data)
+
+# 绘制 Kaplan-Meier 生存曲线（美化版本）
+km_plot <- ggsurvplot(km_fit, data = merged_data, pval = TRUE, conf.int = TRUE,
+                      risk.table = TRUE, legend.labs = c("Low HLA Binding", "High HLA Binding"),
+                      legend.title = "HLA Binding Group", xlab = "Survival Days", ylab = "Survival Probability",
+                      ggtheme = theme_bw(),  # 设置背景为白色
+                      risk.table.height = 0.25,  # 调整风险表高度
+                      risk.table.y.text = FALSE,  # 隐藏风险表 Y 轴标签
+                      palette = c("#0072B5", "#E18727"),  # 设定颜色
+                      surv.median.line = "hv")  # 添加生存中位数线
+
+# 进一步美化：调整主题，使背景更清晰
+km_plot$plot <- km_plot$plot + 
+  theme(
+    panel.grid.major = element_blank(),  # 去掉大网格线
+    panel.grid.minor = element_blank(),  # 去掉小网格线
+    panel.background = element_blank(),  # 设置为透明背景
+    plot.title = element_text(size = 14, face = "bold"),  # 标题加粗
+    axis.text = element_text(size = 12),  # 坐标轴字体大小
+    axis.title = element_text(size = 13, face = "bold"),  # 轴标题加粗
+    legend.text = element_text(size = 12),  # 图例字体大小
+    legend.title = element_text(size = 13, face = "bold")  # 图例标题加粗
+  )
+
+# 保存美化后的 KM 生存曲线到 PNG 文件
+ggsave(filename = file.path(output_dir, "KM_curve.png"), plot = km_plot$plot, width = 8, height = 6, dpi = 300)
+
+# 提示用户文件已保存
+cat("Cox 回归结果已保存至:", file.path(output_dir, "cox_regression_results.csv"), "\n")
+cat("Kaplan-Meier 生存曲线已保存至:", file.path(output_dir, "KM_curve.png"), "\n")
