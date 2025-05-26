@@ -10,33 +10,33 @@ Unlike traditional WES analyses that focus solely on mutation detection, our pip
 ## Workflow Structure
 The project includes the following key modules:
 
-### 1. Exome_upstream_analysis/
+### 1. /scripts/Exome_upstream_analysis/
 Performs quality control, alignment, duplicate removal, BQSR, and variant calling.
 
 Outputs somatic variant VCF files.
 
 Key tools: FastQC (v0.12.1), MultiQC (v1.19), BWA-MEM (v0.7.17), SAMtools (v1.9), Picard (v2.18.23), GATK (v4.0.4.0)
 
-### 2. HLA_analysis/
+### 2. /scripts/HLA_analysis/
 HLA typing using HLA-HD (v1.7.0) from FASTQ files.
 
 Extracts mutation-derived peptides.
 
 Predicts binding affinities using MixMHC2pred for HLA-II alleles.
 
-### 3. HLA_HED/
+### 3. /scripts/HLA_HED/
 Calculates HLA evolutionary divergence (HED) scores.
 
 Quantifies the sequence divergence between HLA alleles per individual.
 
-### 4. Mutation_analysis/
+### 4. /scripts/Mutation_analysis/
 Converts VCF to MAF format using Annovar + maftools.
 
 Calculates tumor mutation burden (TMB).
 
 Performs GO and KEGG pathway enrichment based on mutated genes.
 
-### 5. cox/
+### 5. /scripts/cox/
 Integrates mutation immunogenicity scores, binding affinities, and HED.
 
 ## Dataset
