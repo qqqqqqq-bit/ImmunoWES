@@ -42,7 +42,6 @@ Integrates mutation immunogenicity scores, binding affinities, and HED.
 ## Dataset
 Project Accession: [SRP043661](https://www.ncbi.nlm.nih.gov/sra/?term=SRP043661)
 
-Publication: [PMC4884975](https://pmc.ncbi.nlm.nih.gov/articles/PMC4884975/)
 
 ## Abstract
 Whole-exome sequencing (WES), owing to its efficiency in identifying mutations within protein-coding regions, has emerged as a powerful tool for elucidating the molecular mechanisms underlying immune-mediated diseases and related conditions. Nevertheless, most current studies primarily focus on the mutation profiling of WES data, often neglecting the potential influence of the human leukocyte antigen (HLA) system—a central component of immune regulation. The interaction between somatic mutations and HLA genotypes remains insufficiently characterized, limiting our understanding of immune-driven disease processes and clinical outcomes.
