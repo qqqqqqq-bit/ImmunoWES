@@ -81,7 +81,7 @@ R 4.1+ with required packages (org.Hs.eg.db, enrichplot, etc.)
 ## Citation
 If you use this workflow in your research, please cite:
 
-Zhang et al., Integrative analysis of exome and HLA data reveals immune features associated with prognosis in gastric cancer. PMC4884975
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 ## Contact
 For questions or contributions, please contact:
