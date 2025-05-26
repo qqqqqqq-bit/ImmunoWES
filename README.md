@@ -1,5 +1,5 @@
 Intergration platform for Immunoassay using whole exome sequences 
-
+=
 Overview
 This repository provides a comprehensive analysis workflow that integrates whole-exome sequencing (WES) data with HLA genotyping information. The aim is to explore how somatic mutations interact with the human leukocyte antigen (HLA) system to influence immune-mediated disease progression and clinical outcomes.
 
