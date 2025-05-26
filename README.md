@@ -5,7 +5,7 @@ This repository provides a comprehensive analysis workflow that integrates whole
 
 Unlike traditional WES analyses that focus solely on mutation detection, our pipeline adds immunogenetic context by incorporating HLA class I and II alleles, mutation–HLA binding affinity prediction, HLA evolutionary divergence (HED) scoring, and survival analysis.
 
-### Note: File paths in scripts are environment-specific. Please modify them according to your local server configuration.
+##Note: File paths in scripts are environment-specific. Please modify them according to your local server configuration.##
 
 ## Workflow Structure
 The project includes the following key modules:
