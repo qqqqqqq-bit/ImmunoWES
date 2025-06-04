@@ -1,4 +1,4 @@
-# Intergration platform for Immunoassay using whole exome sequences 
+# ImmunoWES: An Integrated Pipeline for Somatic Mutation and HLA Analysis in Precision Oncology 
 
 ## Overview
 This repository provides a comprehensive analysis workflow that integrates whole-exome sequencing (WES) data with HLA genotyping information. The aim is to explore how somatic mutations interact with the human leukocyte antigen (HLA) system to influence immune-mediated disease progression and clinical outcomes.
@@ -69,7 +69,7 @@ HLA-HD v1.7.0
 
 Annovar
 
-maftools
+maftools(2.20.0)
 
 clusterProfiler
 
