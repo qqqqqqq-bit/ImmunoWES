@@ -1,4 +1,4 @@
-###################GO功能富集###########################################################
+###################GO functional enrichment###########################################################
 library('maftools')
 var.annovar.maf <- annovarToMaf(annovar = "/data/yuan/gastric_cancer/7.annote/annovar1/all_sample.maf",
                                 refBuild = 'hg38',
@@ -18,78 +18,123 @@ require(maftools)
 options(stringsAsFactors = F)
 load(file = 'input_merge.Rdata')
 project = 'merge'
-##############################所有基因
+##############################All genes
 gene_summary <- getGeneSummary(laml)
 write.table(gene_summary, file = "/data/yuan/gastric_cancer/9.enrich/gene_list.txt", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
-############保存之后转移到本地R跑，服务器装不上相关安装包
+############After saving, transfer to local R running, the server cannot install the relevant installation package
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 BiocManager::install(c("clusterProfiler", "org.Hs.eg.db", "enrichplot"))
 
 library(clusterProfiler)
-library(org.Hs.eg.db)   # 人类基因注释数据库
-library(enrichplot)     # 结果可视化
-# 读取基因列表
+library(org.Hs.eg.db)   # Human Gene Annotation Database
+library(enrichplot)     # Results visualization
+# Read the gene list
 gene_list <- read.table("D:/R/gene_list.txt", header = FALSE, stringsAsFactors = FALSE)
 genes <- gene_list$V1
 
-# 将基因 Symbol 转换为 ENTREZ ID
+# Convert gene Symbol to ENTREZ ID
 entrez_ids <- bitr(genes, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = org.Hs.eg.db)
 
-# 检查转换是否成功
+# Check if the conversion is successful
 print(entrez_ids)
 ego <- enrichGO(gene = entrez_ids$ENTREZID,
                 OrgDb = org.Hs.eg.db,
                 keyType = "ENTREZID",
-                ont = "BP",   # "BP"（生物过程）, "CC"（细胞组分）, "MF"（分子功能）
+                ont = "BP",   # "BP"（Biological processes）, "CC"（Cell components）, "MF"（Molecular Function）
                 pAdjustMethod = "BH",
                 pvalueCutoff = 0.05,
                 qvalueCutoff = 0.2)
 
-# 输出富集分析结果
+# Output enrichment analysis results
 write.table(ego@result, file = "D:/R/GO_enrichment_results.txt", sep = "\t", quote = FALSE, row.names = FALSE)
-# 绘制 GO 富集分析柱状图
+# GO barplot
 png("D:/R/GO_barplot.png", width = 1200, height = 800)
-barplot(ego, showCategory = 10, title = "GO Biological Process Enrichment")
+barplot(ego, showCategory = 10, title = "GO Biological Process Enrichment") +
+  theme(
+    axis.title = element_text(size = 18),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 26),
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+    legend.position = c(0.95, 0.05),  # Lower right corner
+    legend.justification = c("right", "bottom"),
+    legend.text = element_text(size = 14),  # Zoom in the legend font
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.background = element_rect(fill = "white", color = NA)
+  )
 dev.off()
 
-# 绘制气泡图
+# GO dotplot
 png("D:/R/GO_dotplot.png", width = 1200, height = 800)
-dotplot(ego, showCategory = 10, title = "GO Biological Process Enrichment")
+dotplot(ego, showCategory = 10, title = "GO Biological Process Enrichment") +
+  theme(
+    axis.title = element_text(size = 18),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 26),
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+    legend.position = c(0.95, 0.05),  # Lower right corner
+    legend.justification = c("right", "bottom"),
+    legend.text = element_text(size = 14),  # Zoom in the legend font
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.background = element_rect(fill = "white", color = NA)
+  )
 dev.off()
 
-#############################################################KEGG富集##############################################
-# 加载所需的 R 包
-library(clusterProfiler)
-library(org.Hs.eg.db)   # 人类基因注释数据库
-library(enrichplot)     # 结果可视化
 
-# 重新读取基因列表
+#############################################################KEGG enrichment##############################################
+# Load the required R package
+library(clusterProfiler)
+library(org.Hs.eg.db)   # Human Gene Annotation Database
+library(enrichplot)     # Results visualization
+
+# Reread the gene list
 gene_list <- read.table("D:/R/gene_list.txt", header = FALSE, stringsAsFactors = FALSE)
-genes <- gene_list$V1  # 提取基因名称
-# 基因 Symbol 转换为 ENTREZ ID
+genes <- gene_list$V1  # Extract gene name
+# Gene Symbol to ENTREZ ID
 entrez_ids <- bitr(genes, fromType = "SYMBOL", toType = "ENTREZID", OrgDb = org.Hs.eg.db)
 
-# 检查转换后的 ID
+# Check the converted ID
 print(entrez_ids)
 ekegg <- enrichKEGG(gene = entrez_ids$ENTREZID, 
                     organism = 'hsa',   
                     pAdjustMethod = "BH",
-                    pvalueCutoff = 0.1,   # 放宽阈值
-                    qvalueCutoff = 0.2)   # 确保有更多通路进入分析
-# 设定展示通路的数量，最多展示 50 个
+                    pvalueCutoff = 0.1,   # Relax threshold
+                    qvalueCutoff = 0.2)   # Make sure there are more pathways to enter the analysis
+# Set the number of display channels, up to 50 displays
 num_categories <- min(50, nrow(ekegg@result))  
 
-# KEGG 柱状图
+# KEGG barplot
 png("D:/R/KEGG_barplot.png", width = 1200, height = 800)
-barplot(ekegg, showCategory = num_categories, title = "KEGG Pathway Enrichment")
+barplot(ekegg, showCategory = num_categories, title = "KEGG Pathway Enrichment") +
+  theme(
+    axis.title = element_text(size = 18),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 26),
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+    legend.position = c(0.95, 0.05),  # Lower right corner
+    legend.justification = c("right", "bottom"),
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.background = element_rect(fill = "white", color = NA)
+  )
 dev.off()
 
-# KEGG 气泡图
+# KEGG dotplot
 png("D:/R/KEGG_dotplot.png", width = 1200, height = 800)
-dotplot(ekegg, showCategory = num_categories, title = "KEGG Pathway Enrichment")
+dotplot(ekegg, showCategory = num_categories, title = "KEGG Pathway Enrichment") +
+  theme(
+    axis.title = element_text(size = 18),
+    axis.text.x = element_text(size = 14),
+    axis.text.y = element_text(size = 26),
+    plot.title = element_text(size = 20, face = "bold", hjust = 0.5),
+    legend.position = c(0.95, 0.05),  # Lower right corner
+    legend.justification = c("right", "bottom"),
+    legend.text = element_text(size = 14),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.background = element_rect(fill = "white", color = NA)
+  )
 dev.off()
 
 
