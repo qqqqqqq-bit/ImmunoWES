@@ -1,85 +1,85 @@
-# 加载所需的 R 包
+# Load the required R package
 library(survival)
 library(survminer)
 library(dplyr)
 
-# 读取生存数据
+# Read survival data
 survival_data <- read.csv("D:/R/gastric_survival/gastric_cancer_survial.csv", sep = ",", stringsAsFactors = FALSE)
 
-# 读取 TMB 数据
+# Read TMB data
 tmb_data <- read.csv("D:/R/gastric_survival/tmb_results.csv", sep = ",", stringsAsFactors = FALSE)
 
-# 确保列名匹配
+# Make sure the column names match
 colnames(survival_data) <- c("eid", "sex", "age", "status", "survival_days")
 colnames(tmb_data) <- c("Tumor_Sample_Barcode", "total", "total_perMB", "total_perMB_log")
 
-# 合并数据，匹配样本 ID
+# Merge data and match sample ID
 merged_data <- merge(survival_data, tmb_data[, c("Tumor_Sample_Barcode", "total_perMB")], 
                      by.x = "eid", by.y = "Tumor_Sample_Barcode", all.x = TRUE)
 
-# 创建 TMB 组别变量（total_perMB < 10 为 0, total_perMB >= 10 为 1）
+# Create TMB group variables（total_perMB < 10 为 0, total_perMB >= 10 为 1）
 merged_data$TMB_group <- ifelse(merged_data$total_perMB < 10, 0, 1)
 
-# 确保数据格式正确
-merged_data$status <- as.numeric(merged_data$status)  # 生存状态 (1 = 死亡)
-merged_data$sex <- as.factor(merged_data$sex)         # 性别设为因子变量
+# Ensure the data format is correct
+merged_data$status <- as.numeric(merged_data$status)  # Status of survival (1 = death)
+merged_data$sex <- as.factor(merged_data$sex)         # Gender is set as factor variable
 
-# 构建生存对象 (Surv)
+# Building a survival object (Surv)
 surv_object <- Surv(time = merged_data$survival_days, event = merged_data$status)
 
-# 进行 Cox 回归，矫正年龄和性别
+# Perform Cox regression to correct age and gender
 cox_model <- coxph(surv_object ~ TMB_group + sex + age, data = merged_data)
 
-# 输出 Cox 回归结果
+# Output Cox regression results
 cox_summary <- summary(cox_model)
 print(cox_summary)
 
-# 指定输出目录
+# Specify the output directory
 output_dir <- "D:/R/gastric_survival/result/TMB"
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
 
-# 保存 Cox 回归结果到 CSV
+# Save Cox regression results to CSV
 cox_result <- data.frame(
   Variable = rownames(cox_summary$coefficients),
-  HR = cox_summary$coefficients[, "exp(coef)"],  # 风险比 (Hazard Ratio)
-  Lower_95_CI = cox_summary$conf.int[, "lower .95"],  # 95% 置信区间下限
-  Upper_95_CI = cox_summary$conf.int[, "upper .95"],  # 95% 置信区间上限
-  P_Value = cox_summary$coefficients[, "Pr(>|z|)"]  # P 值
+  HR = cox_summary$coefficients[, "exp(coef)"],  # (Hazard Ratio)
+  Lower_95_CI = cox_summary$conf.int[, "lower .95"],  # 95% Lower confidence interval limit
+  Upper_95_CI = cox_summary$conf.int[, "upper .95"],  # 95% Upper confidence interval limit
+  P_Value = cox_summary$coefficients[, "Pr(>|z|)"]  # P value
 )
 
 write.csv(cox_result, file = file.path(output_dir, "cox_regression_results.csv"), row.names = FALSE)
 
-# 进行 Kaplan-Meier 生存分析
+# Carry out Kaplan-Meier survival analysis
 km_fit <- survfit(surv_object ~ TMB_group, data = merged_data)
 
-# 绘制 Kaplan-Meier 生存曲线（美化版本）
+# Draw Kaplan-Meier Survival Curve
 km_plot <- ggsurvplot(km_fit, data = merged_data, pval = TRUE, conf.int = TRUE,
                       risk.table = TRUE, legend.labs = c("Low TMB", "High TMB"),
                       legend.title = "TMB Group", xlab = "Survival Days", ylab = "Survival Probability",
-                      ggtheme = theme_bw(),  # 设置背景为白色
-                      risk.table.height = 0.25,  # 调整风险表高度
-                      risk.table.y.text = FALSE,  # 隐藏风险表 Y 轴标签
-                      palette = c("#0072B5", "#E18727"),  # 设定颜色
-                      surv.median.line = "hv")  # 添加生存中位数线
+                      ggtheme = theme_bw(),  # Set background to white
+                      risk.table.height = 0.25,  # Adjust the risk table height
+                      risk.table.y.text = FALSE,  # Hide risk table Y-axis label
+                      palette = c("#0072B5", "#E18727"),  # Set color
+                      surv.median.line = "hv")  # Add median survival line
 
-# 进一步美化：调整主题，使背景更清晰
+# Further beautify: Adjust the theme to make the background clearer
 km_plot$plot <- km_plot$plot + 
   theme(
-    panel.grid.major = element_blank(),  # 去掉大网格线
-    panel.grid.minor = element_blank(),  # 去掉小网格线
-    panel.background = element_blank(),  # 设置为透明背景
-    plot.title = element_text(size = 14, face = "bold"),  # 标题加粗
-    axis.text = element_text(size = 12),  # 坐标轴字体大小
-    axis.title = element_text(size = 13, face = "bold"),  # 轴标题加粗
-    legend.text = element_text(size = 12),  # 图例字体大小
-    legend.title = element_text(size = 13, face = "bold")  # 图例标题加粗
+    panel.grid.major = element_blank(),  # Remove the large grid lines
+    panel.grid.minor = element_blank(),  # Remove small grid lines
+    panel.background = element_blank(),  # Set as transparent background
+    plot.title = element_text(size = 14, face = "bold"),  # Thick title
+    axis.text = element_text(size = 12),  # Axis Font Size
+    axis.title = element_text(size = 13, face = "bold"),  # Axis title thickened
+    legend.text = element_text(size = 12),  # Legend Font Size
+    legend.title = element_text(size = 13, face = "bold")  # Legend title bold
   )
 
-# 保存美化后的 KM 生存曲线到 PNG 文件
+# Save the beautified KM survival curve to PNG file
 ggsave(filename = file.path(output_dir, "KM_curve.png"), plot = km_plot$plot, width = 8, height = 6, dpi = 300)
 
-# 提示用户文件已保存
-cat("Cox 回归结果已保存至:", file.path(output_dir, "cox_regression_results.csv"), "\n")
-cat("Kaplan-Meier 生存曲线已保存至:", file.path(output_dir, "KM_curve.png"), "\n")
+# Prompt the user's file has been saved
+cat("Cox The regression result has been saved to:", file.path(output_dir, "cox_regression_results.csv"), "\n")
+cat("Kaplan-Meier Survival curve saved to:", file.path(output_dir, "KM_curve.png"), "\n")
