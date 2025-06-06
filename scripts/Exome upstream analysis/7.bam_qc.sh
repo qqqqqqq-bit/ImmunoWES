@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 功能：对比对后的 BAM 文件进行质控，生成统计文件和图形报告
+# Function: Comparison of BAM files for quality control, generate statistical files and graphic reports
 
-# 加载 Conda 环境（需含 samtools 和 plot-bamstats）
+# Loading Conda environment (need to include samtools and plot-bamstats)
 source ~/.bashrc
 conda activate wes
 
-# 定义路径
+# Define paths
 WORKDIR="/data/yuan/gastric_cancer"
 ALIGN_DIR="${WORKDIR}/4.align"
 STATS_DIR="${ALIGN_DIR}/stats"
@@ -15,7 +15,7 @@ CONFIG="${WORKDIR}/0.sra/config"
 
 mkdir -p ${STATS_DIR}
 
-# 对每个 BAM 文件进行统计并绘图
+# Statistics and plots each BAM file
 cat ${CONFIG} | while read id; do
     bam="${ALIGN_DIR}/${id}.bam"
     echo "Running samtools stats for ${id}..."
