@@ -39,17 +39,17 @@ for sample_num in hla_files.keys() & peptide_files.keys():
 
     if skipped_alleles:
         undefined_alleles.update(skipped_alleles)
-        print(f"⚠️ 样本 {sample_num} 存在未定义的等位基因：{', '.join(skipped_alleles)}，已跳过")
+        print(f"⚠️ Sample {sample_num} There is an undefined allele: {', '.join(skipped_alleles)}, skipped")
 
     if not valid_alleles:
-        print(f"❌ 警告：{hla_file} 所有等位基因均未定义，跳过 {sample_num}")
+        print(f"❌ Warning: {hla_file} All alleles are undefined, skip {sample_num}")
         continue
 
     with open(peptide_file, "r") as f:
         peptides = f.read().strip().split("\n")
 
     if not peptides:
-        print(f"❌ 警告：{peptide_file} 为空，跳过 {sample_num}")
+        print(f"❌ Warning: {peptide_file} is empty, skip {sample_num}")
         continue
 
     allele_string = " ".join(valid_alleles)
@@ -58,13 +58,13 @@ for sample_num in hla_files.keys() & peptide_files.keys():
 
     try:
         subprocess.run(command, shell=True, check=True, executable="/bin/bash")
-        print(f"✅ 预测完成：样本 {sample_num}，结果保存在 {output_file}")
+        print(f"✅ Prediction completed: sample {sample_num}, the result is saved in {output_file}")
     except subprocess.CalledProcessError as e:
-        print(f"❌ 错误：样本 {sample_num} 预测失败，错误信息：{e}")
+        print(f"❌ Error: Sample {sample_num} prediction failed, error message: {e}")
 
 if undefined_alleles:
-    print("\n⚠️ 以下等位基因未在 PWMdef 目录中定义，无法用于 MixMHC2pred：")
+    print("\n⚠️ The following alleles are not defined in the PWMdef directory and cannot be used for MixMHC2pred:")
     print(", ".join(undefined_alleles))
 
-print("\n✅ 所有样本处理完成！")
+print("\n✅ All samples are processed！")
 
