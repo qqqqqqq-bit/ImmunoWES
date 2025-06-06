@@ -75,6 +75,8 @@ clusterProfiler
 
 MixMHC2pred
 
+NetMHCpan
+
 R 4.1+ with required packages (org.Hs.eg.db, enrichplot, etc.)
 
 ## Citation
