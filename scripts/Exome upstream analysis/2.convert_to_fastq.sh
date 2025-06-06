@@ -1,21 +1,21 @@
 
 #!/bin/bash
 
-# 脚本功能：将下载好的 .sra 文件批量转换为 fastq，并压缩输出
-# 要求：当前目录结构需包含 config 文件（每行一个样本 ID）
+# Script function: batch convert the downloaded .sra files to fastq and compress the output
+# Requirements: The current directory structure must contain a config file (one sample ID per line)
 
-# 设置工作路径（可按需修改）
+# Set the working path (can be modified as needed)
 WORKDIR="/data/yuan/gastric_cancer"
 SRA_DIR="${WORKDIR}/0.sra"
 FASTQ_DIR="${WORKDIR}/1.raw_fq"
 CONFIG_FILE="${SRA_DIR}/config"
 
-# 创建 fastq 输出目录
+# Create fastq output directory
 mkdir -p "${FASTQ_DIR}"
 
-echo "Step 5: 转换 SRA 为 FastQ 并压缩..."
+echo "Step 5: Convert SRA to FastQ and compress..."
 
-# 并行处理每个样本
+# Process each sample in parallel
 cd "${SRA_DIR}"
 cat "${CONFIG_FILE}" | parallel -j 16 "
     echo Converting {}.sra to fastq...
