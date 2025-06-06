@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# 输入和输出路径
+# Input and output paths
 input_dir="/data/yuan/gastric_cancer/downstream_ukb/gastric_vcf"
 output_dir="/data/yuan/gastric_cancer/downstream_ukb/gastric_vcf/filter"
 
-# 创建输出目录
+# Create an output directory
 mkdir -p "$output_dir"
 
-# 遍历所有 .hg38_multianno.vcf 文件
+# Iterate through all .hg38_multianno.vcf files
 for vcf_file in "$input_dir"/*.hg38_multianno.vcf; do
-    # 提取样本名称
+    # Extract sample name
     base_name=$(basename "$vcf_file" .hg38_multianno.vcf)
     output_file="$output_dir/${base_name}_filtered.vcf"
 
     echo "[INFO] Filtering ${base_name}..."
 
-    # 筛选逻辑
+    # Filtering logic
     awk -F"\t" -v OFS="\t" '
     BEGIN {
         print "Chromosome", "Start", "End", "Ref", "Alt", "Genotype", "Qual", "Info";
@@ -23,13 +23,13 @@ for vcf_file in "$input_dir"/*.hg38_multianno.vcf; do
     {
         info_field = ($9 ~ /ExonicFunc.refGene/) ? 9 : 8;
 
-        if ($1 ~ /^chr(X|Y|M)$/) next;  # 跳过性染色体和线粒体
+        if ($1 ~ /^chr(X|Y|M)$/) next;  # Skip sex chromosomes and mitochondria
 
         if ($info_field !~ /ExonicFunc.refGene=nonsynonymous_SNV/) next;
 
         split($info_field, info, ";");
 
-        # 功能预测标志
+        # Functional prediction flag
         lrt_met = 0;
         sift_met = 0;
         mutation_assessor_met = 0;
