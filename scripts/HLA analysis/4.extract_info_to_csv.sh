@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 输入和输出目录
+# Input and output directories
 input_dir="/data/yuan/gastric_cancer/downstream_ukb/gastric_vcf/filter"
 output_dir="/data/yuan/gastric_cancer/downstream_ukb/gastric_vcf/filter/filter_extract_csv"
 
@@ -43,6 +43,6 @@ for file in "$input_dir"/*_filtered.vcf; do
     }
     ' "$file" > "$output_csv"
 
-    # 可选：删除第二行（如果你有空行或多余数据）
+    # Optional: Delete the second row (if you have empty rows or extra data)
     sed -i '2d' "$output_csv"
 done
