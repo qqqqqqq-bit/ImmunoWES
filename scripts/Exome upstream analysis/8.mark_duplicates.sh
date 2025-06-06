@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 功能：使用 GATK MarkDuplicates 对 BAM 文件进行去重并生成索引
+# Function: Deduplicate BAM files and generate indexes using GATK MarkDuplicates
 
-# 加载 Conda 或模块环境（需含 GATK 和 samtools）
+# Loading Conda or module environment (requires GATK and samtools)
 source ~/.bashrc
 conda activate wes
 
-# 路径定义
+# Path definition
 WORKDIR="/data/yuan/gastric_cancer"
 CONFIG="${WORKDIR}/0.sra/config"
 ALIGN_DIR="${WORKDIR}/4.align"
@@ -17,7 +17,7 @@ THREADS=16
 mkdir -p ${GATK_DIR}
 mkdir -p ${TMP_DIR}
 
-# 并行执行 MarkDuplicates 和索引
+# Parallel execution of MarkDuplicates and indexes
 cat ${CONFIG} | parallel -j ${THREADS} "
     BAM=${ALIGN_DIR}/{1}.bam
     STATUS_FILE=${GATK_DIR}/ok.{1}_marked.status
@@ -42,4 +42,4 @@ cat ${CONFIG} | parallel -j ${THREADS} "
     fi
 "
 
-echo "✅ MarkDuplicates 和索引任务完成。"
+echo "✅ MarkDuplicates and indexing tasks complete。"
