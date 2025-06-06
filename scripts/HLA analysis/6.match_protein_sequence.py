@@ -4,7 +4,7 @@ import re
 import os
 
 def extract_gene_name(header):
-    """从fasta序列名中提取GN=后的基因名"""
+    """Extract the gene name after GN= from the fasta sequence name"""
     match = re.search(r'GN=(\w+)', header)
     if match:
         return match.group(1)
@@ -12,20 +12,20 @@ def extract_gene_name(header):
 
 def match_sequences(fasta_file, input_dir, output_dir, gene_col_index=10, seq_col_index=12):
 
-    # 从fasta文件中提取基因名和对应的序列
+    # Extract gene name and corresponding sequence from fasta file
     gene_to_seq = {}
     for record in SeqIO.parse(fasta_file, "fasta"):
         gene_name = extract_gene_name(record.description)
         if gene_name:
             gene_to_seq[gene_name] = str(record.seq)
     
-    # 获取input_dir下所有CSV文件
+    # Get all CSV files under input_dir
     for filename in os.listdir(input_dir):
         if filename.endswith(".csv"):
             input_csv = os.path.join(input_dir, filename)
             output_csv = os.path.join(output_dir, filename.replace(".csv", "_filtered.csv"))
             
-            # 打开CSV文件进行处理
+            # Open CSV file for processing
             with open(input_csv, 'r', newline='') as infile, \
                  open(output_csv, 'w', newline='') as outfile:
                 
@@ -34,13 +34,13 @@ def match_sequences(fasta_file, input_dir, output_dir, gene_col_index=10, seq_co
                 
                 header = next(reader)
                 
-                # 确保csv列数正确，添加空列直到达到目标列
+                # Make sure the number of csv columns is correct and add empty columns until the target column is reached
                 while len(header) <= seq_col_index:
                     header.append('')
                 header[seq_col_index] = 'Sequence'
                 writer.writerow(header)
                 
-                # 遍历每一行并根据基因名匹配对应的序列
+                # Iterate through each row and match the corresponding sequence according to the gene name
                 for row in reader:
                     while len(row) <= seq_col_index:
                         row.append('')
@@ -57,10 +57,10 @@ if __name__ == "__main__":
     input_dir = "/data/yuan/gastric_cancer/downstream_ukb/gastric_vcf/filter/filter_extract_csv/"
     output_dir = "/data/yuan/gastric_cancer/downstream_ukb/gastric_vcf/whole_seq/"
     
-    # 确保输出目录存在
+    # Make sure the output directory exists
     os.makedirs(output_dir, exist_ok=True)
 
-    # 调用函数处理所有文件
+    # Calling functions to process all files
     match_sequences(fasta_file, input_dir, output_dir)
 
 
