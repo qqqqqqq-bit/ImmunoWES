@@ -1,7 +1,7 @@
 library(maftools)
 options(stringsAsFactors = FALSE)
 
-# 导入 MAF 数据
+# Import MAF data
 var.annovar.maf <- annovarToMaf(
   annovar = "data/all_sample.maf",
   refBuild = "hg38",
@@ -13,29 +13,29 @@ var.annovar.maf <- annovarToMaf(
 laml <- var.annovar.maf
 save(laml, file = "results/input_merge.Rdata")
 
-# 突变总结图
+# Mutation summary chart
 png("results/plotmafSummary_merge.png", res = 150, width = 1080, height = 1080)
 plotmafSummary(maf = laml, rmOutlier = TRUE, showBarcodes = TRUE,
                textSize = 0.4, addStat = "median", dashboard = TRUE)
 dev.off()
 
-# Top30基因突变图
+# Top30 gene mutation map
 png("results/oncoplot_top30_merge.png", res = 150, width = 1080, height = 1080)
 oncoplot(maf = laml, top = 30, fontSize = 0.5, showTumorSampleBarcodes = TRUE)
 dev.off()
 
-# TP53变异图
+# TP53 mutation diagram
 png("results/TP53.png", res = 150, width = 1080, height = 1080)
 lollipopPlot(laml, gene = "TP53", AACol = "AAChange.refGene", labelPos = "all")
 dev.off()
 
-# TMB 计算与图表
+# TMB calculations and charts
 tmb1 <- tmb(maf = laml)
 png("results/output.png")
 plot(tmb1)
 dev.off()
 
-# TMB散点图
+# TMB scatter plot
 library(ggplot2)
 png("results/total_perMB_scatterplot.png", width = 800, height = 600)
 ggplot(tmb1, aes(x = Tumor_Sample_Barcode, y = total_perMB)) + 
@@ -47,5 +47,5 @@ ggplot(tmb1, aes(x = Tumor_Sample_Barcode, y = total_perMB)) +
         plot.title = element_text(hjust = 0.5))
 dev.off()
 
-# 保存数据
+# Save data
 write.csv(tmb1, "results/tmb_results.csv", row.names = FALSE)
