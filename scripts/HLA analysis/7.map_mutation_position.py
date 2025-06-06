@@ -11,7 +11,7 @@ os.makedirs(output_path, exist_ok=True)
 
 # Iterate through all CSV files
 for file_name in os.listdir(input_path):
-    if file_name.endswith(".csv"):  # 只处理 CSV 文件
+    if file_name.endswith(".csv"):  # Process only CSV files
         file_path = os.path.join(input_path, file_name)
         
         # Read CSV files
