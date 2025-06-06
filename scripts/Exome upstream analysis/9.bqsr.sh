@@ -1,23 +1,23 @@
 #!/bin/bash
 
-# 功能：使用 GATK 进行碱基质量重校正（Base Quality Score Recalibration, BQSR）
+# Function: Base Quality Score Recalibration (BQSR) using GATK
 
-# Conda 环境
+# Conda Environment
 source ~/.bashrc
 conda activate wes
 
-# 输入配置
+# Enter configuration
 WORKDIR="/data/yuan/gastric_cancer"
 CONFIG="${WORKDIR}/0.sra/config"
 GATK_DIR="${WORKDIR}/5.gatk"
 THREADS=16
 
-# 参考文件路径
+#Reference file path
 REF="/root/wes_cancer/data/Homo_sapiens_assembly38.fasta"
 SNP="/root/wes_cancer/data/dbsnp_146.hg38.vcf.gz"
 INDEL="/root/wes_cancer/data/Mills_and_1000G_gold_standard.indels.hg38.vcf.gz"
 
-# 创建函数
+# Create a function
 bqsr_pipeline() {
     id=$1
     MARKED_BAM="${GATK_DIR}/${id}_marked.bam"
@@ -50,9 +50,9 @@ bqsr_pipeline() {
     fi
 }
 
-# 导出函数与变量
+# Export functions and variables
 export -f bqsr_pipeline
 export GATK_DIR REF SNP INDEL WORKDIR
 
-# 并行执行
+# Parallel execution
 cat ${CONFIG} | parallel -j ${THREADS} bqsr_pipeline
