@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 功能：使用 BWA MEM + samtools 对 clean FASTQ 进行比对，输出排序后的 BAM 文件
+# Function: Use BWA MEM + samtools to compare clean FASTQ and output the sorted BAM file
 
-# 加载 Conda 环境（需含 bwa、samtools）
+# Loading Conda environment (need to include bwa and samtools)
 source ~/.bashrc
 conda activate wes
 
-# 设定路径
+# Set the path
 WORKDIR="/data/yuan/gastric_cancer"
 CLEAN_FQ_DIR="${WORKDIR}/2.clean_fq"
 ALIGN_DIR="${WORKDIR}/4.align"
@@ -15,7 +15,7 @@ INDEX="/root/wes_cancer/data/gatk_hg38"
 
 mkdir -p ${ALIGN_DIR}
 
-# 并行运行 BWA + SAMtools
+#Run BWA + SAMtools in parallel
 cat ${CONFIG} | parallel -j 8 "
 echo 'Start BWA for {}' \$(date)
 fq1=${CLEAN_FQ_DIR}/{}_1_val_1.fq.gz
@@ -25,4 +25,4 @@ samtools sort -@ 8 -m 1G -o ${ALIGN_DIR}/{}.bam -
 echo 'End BWA for {}' \$(date)
 "
 
-echo "比对完成，BAM 文件保存在 ${ALIGN_DIR}/"
+echo "Comparison is completed, and the BAM file is saved in ${ALIGN_DIR}/"
