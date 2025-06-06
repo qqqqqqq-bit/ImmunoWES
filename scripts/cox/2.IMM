@@ -1,98 +1,98 @@
-# 加载所需的 R 包
+# Load the required R package
 library(survival)
 library(survminer)
 library(dplyr)
 
-# 读取生存数据
+# Read survival data
 survival_data <- read.csv("D:/R/gastric_survival/gastric_cancer_survial.csv", sep = ",", stringsAsFactors = FALSE)
 
-# 读取 HLA 结合力数据
+# Read HLA binding force data
 hla_data <- read.csv("D:/R/gastric_survival/rank_best_counts.csv", sep = ",", stringsAsFactors = FALSE)
 
-# 先检查列名，找到 R 自动转换后的列名
+# First check the column name and find the column name automatically converted by R
 print(colnames(hla_data))  
 
-# 可能列名被转换成 `Count.10..Rank`，手动修改为 `hla_binding_count`
+# Possible column names are converted to `Count.10..Rank` and manually modified to `hla_binding_count`
 colnames(hla_data)[colnames(hla_data) == "Count.10..Rank"] <- "hla_binding_count"
 
-# 提取 HLA 数据中仅保留 Filename 和 结合力计数列
+# Only Filename and binding force count columns are retained in the HLA data
 hla_data <- hla_data[, c("Filename", "hla_binding_count")]
 
-# 提取样本 ID，与生存数据匹配
+# Extract the sample ID and match the survival data
 hla_data$eid <- gsub("_prediction.txt", "", hla_data$Filename)
 
-# 只保留 `eid` 和 `hla_binding_count` 这两列
+# Only the two columns `eid` and `hla_binding_count` are preserved
 hla_data <- hla_data[, c("eid", "hla_binding_count")]
 
-# 合并生存数据和 HLA 结合数据
+# Combining survival data with HLA combined data
 merged_data <- merge(survival_data, hla_data, by = "eid", all.x = TRUE)
 
-# 计算 HLA 结合力的75%分位数
+# Calculate the 75% quantile of HLA binding force
 quantile_75 <- quantile(merged_data$hla_binding_count, 0.75, na.rm = TRUE)
 
-# 创建 HLA 结合力分组变量（小于75%分位数 = 0, 大于等于75%分位数 = 1）
+# Create HLA binding force grouping variable (less than 75% quantile = 0, greater than or equal to 75% quantile = 1)
 merged_data$HLA_group <- ifelse(merged_data$hla_binding_count < quantile_75, 0, 1)
 
-# 确保数据格式正确
-merged_data$status <- as.numeric(merged_data$status)  # 生存状态 (1 = 死亡)
-merged_data$sex <- as.factor(merged_data$sex)         # 性别设为因子变量
+# Ensure the data format is correct
+merged_data$status <- as.numeric(merged_data$status)  # Status of survival (1 = death)
+merged_data$sex <- as.factor(merged_data$sex)         # Gender is set as factor variable
 
-# 构建生存对象 (Surv)
+# Building a survival object (Surv)
 surv_object <- Surv(time = merged_data$survival_days, event = merged_data$status)
 
-# 进行 Cox 回归，矫正年龄和性别
+# Perform Cox regression to correct age and gender
 cox_model <- coxph(surv_object ~ HLA_group + sex + age, data = merged_data)
 
-# 输出 Cox 回归结果
+# Output Cox regression results
 cox_summary <- summary(cox_model)
 print(cox_summary)
 
-# 指定输出目录
+# Specify the output directory
 output_dir <- "D:/R/gastric_survival/result/IMM"
 if (!dir.exists(output_dir)) {
   dir.create(output_dir, recursive = TRUE)
 }
 
-# 保存 Cox 回归结果到 CSV
+# Save Cox regression results to CSV
 cox_result <- data.frame(
   Variable = rownames(cox_summary$coefficients),
-  HR = cox_summary$coefficients[, "exp(coef)"],  # 风险比 (Hazard Ratio)
-  Lower_95_CI = cox_summary$conf.int[, "lower .95"],  # 95% 置信区间下限
-  Upper_95_CI = cox_summary$conf.int[, "upper .95"],  # 95% 置信区间上限
-  P_Value = cox_summary$coefficients[, "Pr(>|z|)"]  # P 值
+  HR = cox_summary$coefficients[, "exp(coef)"],  # Hazard Ratio
+  Lower_95_CI = cox_summary$conf.int[, "lower .95"],  # 95% Lower confidence interval limit
+  Upper_95_CI = cox_summary$conf.int[, "upper .95"],  # 95% Upper confidence interval limit
+  P_Value = cox_summary$coefficients[, "Pr(>|z|)"]  # P value
 )
 
 write.csv(cox_result, file = file.path(output_dir, "cox_regression_results.csv"), row.names = FALSE)
 
-# 进行 Kaplan-Meier 生存分析
+# Carry out Kaplan-Meier survival analysis
 km_fit <- survfit(surv_object ~ HLA_group, data = merged_data)
 
-# 绘制 Kaplan-Meier 生存曲线（美化版本）
+# Draw Kaplan-Meier survival curves
 km_plot <- ggsurvplot(km_fit, data = merged_data, pval = TRUE, conf.int = TRUE,
                       risk.table = TRUE, legend.labs = c("Low HLA Binding", "High HLA Binding"),
                       legend.title = "HLA Binding Group", xlab = "Survival Days", ylab = "Survival Probability",
-                      ggtheme = theme_bw(),  # 设置背景为白色
-                      risk.table.height = 0.25,  # 调整风险表高度
-                      risk.table.y.text = FALSE,  # 隐藏风险表 Y 轴标签
-                      palette = c("#0072B5", "#E18727"),  # 设定颜色
-                      surv.median.line = "hv")  # 添加生存中位数线
+                      ggtheme = theme_bw(),  # Set background to white
+                      risk.table.height = 0.25,  # Adjust the risk table height
+                      risk.table.y.text = FALSE,  # Hide risk table Y-axis label
+                      palette = c("#0072B5", "#E18727"),  # Set color
+                      surv.median.line = "hv")  # Add median survival line
 
-# 进一步美化：调整主题，使背景更清晰
+# Further beautify: Adjust the theme to make the background clearer
 km_plot$plot <- km_plot$plot + 
   theme(
-    panel.grid.major = element_blank(),  # 去掉大网格线
-    panel.grid.minor = element_blank(),  # 去掉小网格线
-    panel.background = element_blank(),  # 设置为透明背景
-    plot.title = element_text(size = 14, face = "bold"),  # 标题加粗
-    axis.text = element_text(size = 12),  # 坐标轴字体大小
-    axis.title = element_text(size = 13, face = "bold"),  # 轴标题加粗
-    legend.text = element_text(size = 12),  # 图例字体大小
-    legend.title = element_text(size = 13, face = "bold")  # 图例标题加粗
+    panel.grid.major = element_blank(),  # Remove the large grid lines
+    panel.grid.minor = element_blank(),  # Remove small grid lines
+    panel.background = element_blank(),  # Set as transparent background
+    plot.title = element_text(size = 14, face = "bold"),  # Thick title
+    axis.text = element_text(size = 12),  # Axis Font Size
+    axis.title = element_text(size = 13, face = "bold"),  # Axis title thickened
+    legend.text = element_text(size = 12),  # Legend Font Size
+    legend.title = element_text(size = 13, face = "bold")  # Legend title bold
   )
 
-# 保存美化后的 KM 生存曲线到 PNG 文件
+# Save the beautified KM survival curve to PNG file
 ggsave(filename = file.path(output_dir, "KM_curve.png"), plot = km_plot$plot, width = 8, height = 6, dpi = 300)
 
-# 提示用户文件已保存
-cat("Cox 回归结果已保存至:", file.path(output_dir, "cox_regression_results.csv"), "\n")
-cat("Kaplan-Meier 生存曲线已保存至:", file.path(output_dir, "KM_curve.png"), "\n")
+# Prompt the user's file has been saved
+cat("Cox The regression result has been saved to:", file.path(output_dir, "cox_regression_results.csv"), "\n")
+cat("Kaplan-Meier Survival curve saved to:", file.path(output_dir, "KM_curve.png"), "\n")
