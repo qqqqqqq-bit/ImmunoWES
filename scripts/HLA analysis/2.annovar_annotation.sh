@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# 设置路径
+# Set path
 VCF_DIR="/data/yuan/gastric_cancer/6.mutect"
 ANNOVAR_DIR="/data/yuan/annovar"
 OUT_DIR="/data/yuan/gastric_cancer/7.annote/annovar1"
 DB_DIR="${ANNOVAR_DIR}/humandb"
 CONFIG="/data/yuan/gastric_cancer/config"
 
-# Step 1: 转换 VCF 为 avinput 格式
+# Step 1: Convert VCF to avinput format
 cd ${ANNOVAR_DIR}
 cat ${CONFIG} | while read id
 do
@@ -15,7 +15,7 @@ do
     convert2annovar.pl -format vcf4old ${VCF_DIR}/${id}_filter.vcf > ${VCF_DIR}/${id}_filter.vcf.avinput
 done
 
-# Step 2: 使用 table_annovar.pl 进行注释
+# Step 2: Annotate with table_annovar.pl
 cd ${ANNOVAR_DIR}
 cat ${CONFIG} | while read id
 do
