@@ -75,7 +75,7 @@ clusterProfiler
 
 MixMHC2pred
 
-NetMHCpan
+MHCflurry
 
 R 4.1+ with required packages (org.Hs.eg.db, enrichplot, etc.)
 
@@ -87,10 +87,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ## Contact
 For questions or contributions, please contact:
 
-Name: [Your Name]
+Name: [Qingzhen Hou]
 
-Email: [your.email@example.com]
+Email: [houqingzhen@sdu.edu.cn]
 
-Institution: [Your Institution]
-
-Performs Cox proportional hazards survival analysis to evaluate prognostic significance.
+Institution: [Department of Biostatistics, School of Public Health, Cheeloo College of Medicine,
+ Shandong University, Jinan, 250012, Shandong, China.]
