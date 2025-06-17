@@ -79,7 +79,6 @@ MHCflurry
 
 R 4.1+ with required packages (org.Hs.eg.db, enrichplot, etc.)
 
-
 ## Contact
 For questions or contributions, please contact:
 
